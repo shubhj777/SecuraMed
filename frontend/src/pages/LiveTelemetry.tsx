@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Activity, Heart, Thermometer, Wind, RefreshCw, 
-  Send, ShieldCheck, AlertCircle, Sparkles 
+  Send, ShieldCheck, AlertCircle, Sparkles, Lock
 } from 'lucide-react';
 import { 
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, 
-  Tooltip, CartesianGrid, AreaChart, Area 
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
+  Tooltip, CartesianGrid 
 } from 'recharts';
 import { Device, TelemetryRecord } from '../types';
 import { api } from '../services/api';
@@ -53,12 +53,10 @@ export const LiveTelemetry: React.FC = () => {
   const handleSendSyntheticTelemetry = async () => {
     try {
       setLoading(true);
-      // Calls simulate attack endpoint with synthetic ingestion
-      await api.simulateAttack(selectedDevice, 'MESSAGE_TAMPERING'); // Generates session and telemetry event
+      await api.simulateAttack(selectedDevice, 'MESSAGE_TAMPERING');
       await fetchHistory();
-      setStatusMsg(`Telemetry packet successfully encrypted (AES-256-GCM), verified, and ingested.`);
+      setStatusMsg(`Synthetic telemetry packet encrypted, verified, and ingested via authenticated session.`);
     } catch (e: any) {
-      // Fallback
       await fetchHistory();
     } finally {
       setLoading(false);
@@ -77,27 +75,39 @@ export const LiveTelemetry: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Disclaimer Banner */}
-      <div className="rounded-xl p-4 bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <Activity className="w-5 h-5 text-cyan-400" />
+          Device Monitoring
+        </h1>
+        <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+          View demonstration readings and communication activity from connected device emulators.
+        </p>
+      </div>
+
+      {/* Mandatory Clinical Disclaimer Banner */}
+      <div className="rounded-xl p-4 bg-amber-500/10 border border-amber-500/20 flex items-start gap-3 shadow-sm">
         <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
         <div className="text-xs text-amber-200/90 leading-relaxed">
-          <span className="font-bold uppercase tracking-wider text-amber-400 font-mono">Notice: Synthetic Telemetry Only. </span>
-          All physiological parameters displayed are synthetic demonstration data for cybersecurity protocol testing.
-          The gateway does not connect to real medical patients, make clinical treatment determinations, or perform medical diagnosis.
+          <span className="font-bold uppercase tracking-wider text-amber-400 font-mono">
+            DEMONSTRATION DATA ONLY —{' '}
+          </span>
+          These readings are synthetically generated for cybersecurity testing. This application does not connect to real patients or provide clinical diagnosis or treatment.
         </div>
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111827] p-4 rounded-xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111827] p-4 rounded-xl border border-slate-800 shadow-sm">
         <div className="flex items-center space-x-3">
           <Activity className="w-5 h-5 text-cyan-400" />
           <div>
-            <div className="text-sm font-bold text-white">Live Patient Monitoring Telemetry</div>
-            <div className="text-xs text-slate-400 font-mono">Protected by AES-256-GCM + Authenticated AAD</div>
+            <div className="text-sm font-bold text-white">Demonstration Vital Signs Telemetry</div>
+            <div className="text-xs text-slate-400">Encrypted Communication &bull; Tamper-Evident Ingestion</div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={selectedDevice}
             onChange={(e) => setSelectedDevice(e.target.value)}
@@ -133,9 +143,16 @@ export const LiveTelemetry: React.FC = () => {
         </div>
       </div>
 
-      {/* Latest Vital Cards */}
+      {statusMsg && (
+        <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-cyan-300 flex items-center justify-between">
+          <span>&gt; {statusMsg}</span>
+          <button onClick={() => setStatusMsg(null)} className="text-slate-400 hover:text-white">&times;</button>
+        </div>
+      )}
+
+      {/* Latest Vital Demonstration Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Heart Rate</span>
             <Heart className="w-4 h-4 text-rose-400" />
@@ -143,10 +160,10 @@ export const LiveTelemetry: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-white mt-2">
             {latest?.heart_rate ?? 76} <span className="text-xs font-normal text-slate-400">bpm</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Normal Sinus Rhythm</div>
+          <div className="text-[11px] text-slate-400 mt-1">Simulated Signal</div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Oxygen Saturation</span>
             <Activity className="w-4 h-4 text-cyan-400" />
@@ -154,10 +171,10 @@ export const LiveTelemetry: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-cyan-300 mt-2">
             {latest?.spo2 ?? 98.5} <span className="text-xs font-normal text-slate-400">%</span>
           </div>
-          <div className="text-[11px] text-emerald-400 mt-1">Optimal Saturation</div>
+          <div className="text-[11px] text-emerald-400 mt-1">Simulated Signal</div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Core Temperature</span>
             <Thermometer className="w-4 h-4 text-amber-400" />
@@ -165,10 +182,10 @@ export const LiveTelemetry: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-amber-300 mt-2">
             {latest?.temperature ?? 36.8} <span className="text-xs font-normal text-slate-400">&deg;C</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Normothermic</div>
+          <div className="text-[11px] text-slate-400 mt-1">Simulated Signal</div>
         </div>
 
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Respiratory Rate</span>
             <Wind className="w-4 h-4 text-indigo-400" />
@@ -176,20 +193,22 @@ export const LiveTelemetry: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-indigo-300 mt-2">
             {latest?.respiratory_rate ?? 16} <span className="text-xs font-normal text-slate-400">rpm</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Eupnea</div>
+          <div className="text-[11px] text-slate-400 mt-1">Simulated Signal</div>
         </div>
       </div>
 
-      {/* Telemetry Charts */}
+      {/* Historical Demonstration Telemetry Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Heart Rate Chart */}
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="text-xs font-bold text-white mb-3 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <Heart className="w-4 h-4 text-rose-400" />
-              Heart Rate Trend (bpm)
+              Heart Rate Trend (Demonstration bpm)
             </span>
-            <span className="text-[10px] font-mono text-slate-400">AAD: Verified</span>
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              Encrypted Stream
+            </span>
           </div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -211,13 +230,15 @@ export const LiveTelemetry: React.FC = () => {
         </div>
 
         {/* SpO2 Chart */}
-        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800">
+        <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 shadow-sm">
           <div className="text-xs font-bold text-white mb-3 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-cyan-400" />
-              Blood Oxygen (SpO2 %)
+              Blood Oxygen (Demonstration SpO2 %)
             </span>
-            <span className="text-[10px] font-mono text-slate-400">AAD: Verified</span>
+            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+              Integrity Verified
+            </span>
           </div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">

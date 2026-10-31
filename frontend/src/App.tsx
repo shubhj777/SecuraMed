@@ -10,7 +10,6 @@ import { AttackSimulationLab } from './pages/AttackSimulationLab';
 import { FirmwareSecurity } from './pages/FirmwareSecurity';
 import { SecurityEvents } from './pages/SecurityEvents';
 import { AuditLogs } from './pages/AuditLogs';
-import { Settings } from './pages/Settings';
 import { SecurityStats } from './types';
 import { api } from './services/api';
 
@@ -58,8 +57,6 @@ export function App() {
         return <SecurityEvents />;
       case 'audit':
         return <AuditLogs />;
-      case 'settings':
-        return <Settings />;
       default:
         return <Overview stats={stats} onNavigate={setCurrentPage} />;
     }
