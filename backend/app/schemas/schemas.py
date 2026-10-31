@@ -203,10 +203,32 @@ class UserResponse(BaseModel):
     id: int
     username: str
     role: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    hospital_name: Optional[str] = "St. Jude Memorial Hospital"
+    last_login: Optional[datetime] = None
+    password_updated_at: Optional[datetime] = None
+    active_sessions: Optional[int] = 1
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class ForgotPasswordRequest(BaseModel):
+    identifier: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class GenericMessageResponse(BaseModel):
+    status: str = "SUCCESS"
+    message: str
+    reset_token: Optional[str] = None
 
 # --- Cryptography & Benchmark Schemas ---
 class CryptoStatusResponse(BaseModel):

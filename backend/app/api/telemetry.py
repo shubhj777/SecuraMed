@@ -203,3 +203,50 @@ def get_telemetry_history(device_id: str, limit: int = 50, db: Session = Depends
     ).order_by(Telemetry.timestamp.desc()).limit(limit).all()
     # Reverse so the frontend chart receives chronological order
     return list(reversed(records))
+
+@router.post("/stream-demo/{device_id}", response_model=TelemetryRecordResponse)
+def stream_demo_telemetry(device_id: str, db: Session = Depends(get_db)):
+    """
+    Ingests an authenticated synthetic demonstration telemetry packet for the specified device.
+    Uses realistic vital signs per device profile and stores in the real telemetry table.
+    """
+    device = db.query(Device).filter(Device.device_id == device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
+
+    import random
+    now = datetime.now(timezone.utc)
+    
+    # Device-profile-specific values
+    hr = round(random.uniform(70.0, 82.0), 1)
+    spo2 = round(random.uniform(97.0, 99.5), 1)
+    temp = round(random.uniform(36.6, 37.1), 1)
+    rr = round(random.uniform(14.0, 18.0), 1)
+
+    if device.device_type == "VENTILATOR":
+        rr = round(random.uniform(16.0, 22.0), 1)
+        hr = round(random.uniform(74.0, 86.0), 1)
+    elif device.device_type == "TEMPERATURE_MONITOR":
+        temp = round(random.uniform(36.7, 37.4), 1)
+    elif device.device_type == "PULSE_OXIMETER":
+        spo2 = round(random.uniform(96.5, 99.8), 1)
+        hr = round(random.uniform(68.0, 78.0), 1)
+    elif device.device_type == "INFUSION_PUMP":
+        hr = round(random.uniform(72.0, 76.0), 1)
+
+    record = Telemetry(
+        device_id=device_id,
+        timestamp=now,
+        heart_rate=hr,
+        spo2=spo2,
+        temperature=temp,
+        respiratory_rate=rr,
+        data_source="SYNTHETIC",
+        raw_payload_hash=hashlib.sha256(f"{device_id}-{now.isoformat()}-{hr}".encode()).hexdigest()
+    )
+    db.add(record)
+    device.connection_status = "ONLINE"
+    device.last_seen = now
+    db.commit()
+    db.refresh(record)
+    return record

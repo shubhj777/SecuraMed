@@ -109,7 +109,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(64), unique=True, index=True, nullable=False)
     password_hash = Column(String(256), nullable=False)
-    role = Column(String(32), default="ADMIN", nullable=False)  # ADMIN, SECURITY_ANALYST
+    role = Column(String(32), default="ADMIN", nullable=False)  # ADMIN, IT_ADMIN, SECURITY_ANALYST, OPERATOR
+    email = Column(String(128), nullable=True)
+    full_name = Column(String(128), nullable=True)
+    hospital_name = Column(String(128), nullable=True, default="St. Jude Memorial Hospital")
+    last_login = Column(DateTime, nullable=True)
+    password_updated_at = Column(DateTime, default=utcnow, nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
 class AuditLog(Base):
