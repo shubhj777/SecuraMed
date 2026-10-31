@@ -1,6 +1,7 @@
 import { 
   Device, SecurityStats, CryptoStatus, CryptoBenchmark, 
-  TelemetryRecord, FirmwareRecord, AuditLog, AttackResult, SecurityEvent 
+  TelemetryRecord, FirmwareRecord, AuditLog, AttackResult, SecurityEvent,
+  UserProfile, LoginResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -117,6 +118,104 @@ export const api = {
     return res.json();
   },
 
+  // Telemetry stream demo
+  streamDemoTelemetry: async (deviceId: string): Promise<TelemetryRecord> => {
+    const res = await fetch(`${API_BASE}/telemetry/stream-demo/${deviceId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Telemetry stream failed');
+    }
+    return res.json();
+  },
+
+  // Authentication & Hospital Profile
+  login: async (username: string, password: string): Promise<LoginResponse> => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Hospital authentication failed');
+    }
+    return res.json();
+  },
+
+  getMe: async (token?: string): Promise<UserProfile> => {
+    const authToken = token || localStorage.getItem('securemed_token');
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to retrieve profile');
+    }
+    return res.json();
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+    const authToken = localStorage.getItem('securemed_token');
+    const res = await fetch(`${API_BASE}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+      },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Password change failed');
+    }
+    return res.json();
+  },
+
+  forgotPassword: async (identifier: string): Promise<{ status: string; message: string; reset_token?: string }> => {
+    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Password recovery failed');
+    }
+    return res.json();
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
+    const res = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPassword })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Password reset failed');
+    }
+    return res.json();
+  },
+
+  logout: async (): Promise<void> => {
+    const authToken = localStorage.getItem('securemed_token');
+    if (authToken) {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+      } catch (e) {
+        console.warn('Logout API notification failed:', e);
+      }
+    }
+    localStorage.removeItem('securemed_token');
+    localStorage.removeItem('securemed_user');
+  },
+
   // Audit Logs
   getAuditLogs: async (limit: number = 50): Promise<AuditLog[]> => {
     const res = await fetch(`${API_BASE}/audit/logs?limit=${limit}`);
@@ -138,3 +237,4 @@ export const api = {
     return res.json();
   }
 };
+

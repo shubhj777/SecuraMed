@@ -115,3 +115,24 @@ export interface AttackResult {
   detection_module: string;
   technical_details: Record<string, any>;
 }
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  full_name?: string;
+  email?: string;
+  hospital_name?: string;
+  role: string;
+  is_active: boolean;
+  last_login?: string;
+  password_updated_at?: string;
+  active_sessions?: number;
+  created_at: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  role: string;
+  username: string;
+}

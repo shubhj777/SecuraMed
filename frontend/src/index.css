@@ -3,15 +3,24 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 }
 
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
   background-color: #0B0F19;
   color: #F3F4F6;
-  overflow-x: hidden;
+}
+
+html:not(.dark) body {
+  background-color: #F5F7FA;
+  color: #172033;
 }
 
 code, pre, .font-mono {
@@ -24,17 +33,91 @@ code, pre, .font-mono {
   height: 6px;
 }
 
-::-webkit-scrollbar-track {
+html.dark ::-webkit-scrollbar-track {
   background: #0B0F19;
 }
-
-::-webkit-scrollbar-thumb {
+html.dark ::-webkit-scrollbar-thumb {
   background: #1F2937;
   border-radius: 3px;
 }
-
-::-webkit-scrollbar-thumb:hover {
+html.dark ::-webkit-scrollbar-thumb:hover {
   background: #374151;
+}
+
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Part 5 Hospital Light Mode Token Adaptations */
+html:not(.dark) .bg-\[\#111827\] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .bg-\[\#0B0F19\] {
+  background-color: #F5F7FA !important;
+}
+
+html:not(.dark) .bg-\[\#0F172A\] {
+  background-color: #FFFFFF !important;
+}
+
+html:not(.dark) .bg-slate-900,
+html:not(.dark) .bg-slate-900\/60,
+html:not(.dark) .bg-slate-900\/70,
+html:not(.dark) .bg-slate-900\/80,
+html:not(.dark) .bg-slate-900\/90 {
+  background-color: #F8FAFC !important;
+}
+
+html:not(.dark) .bg-slate-800,
+html:not(.dark) .bg-slate-800\/60,
+html:not(.dark) .bg-slate-800\/70,
+html:not(.dark) .bg-slate-800\/80 {
+  background-color: #F1F5F9 !important;
+}
+
+html:not(.dark) .border-slate-800,
+html:not(.dark) .border-slate-800\/80,
+html:not(.dark) .border-slate-700,
+html:not(.dark) .border-slate-700\/60 {
+  border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) .text-white {
+  color: #172033 !important;
+}
+
+html:not(.dark) .text-slate-100,
+html:not(.dark) .text-slate-200,
+html:not(.dark) .text-slate-300 {
+  color: #1E293B !important;
+}
+
+html:not(.dark) .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Explicitly preserve text colors for action buttons, badges, and alerts */
+html:not(.dark) .bg-\[\#E63946\],
+html:not(.dark) .bg-\[\#E63946\] *,
+html:not(.dark) button.bg-\[\#E63946\],
+html:not(.dark) button.bg-\[\#E63946\] *,
+html:not(.dark) .bg-rose-600,
+html:not(.dark) .bg-rose-600 *,
+html:not(.dark) .bg-cyan-600,
+html:not(.dark) .bg-cyan-600 *,
+html:not(.dark) .text-white.badge,
+html:not(.dark) .bg-emerald-600,
+html:not(.dark) .bg-emerald-600 * {
+  color: #FFFFFF !important;
 }
 
 /* Cyber glow accents */
@@ -47,5 +130,5 @@ code, pre, .font-mono {
 }
 
 .cyber-glow-rose {
-  box-shadow: 0 0 20px -5px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 20px -5px rgba(230, 57, 70, 0.3);
 }
