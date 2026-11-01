@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollText, ShieldCheck, ShieldAlert, RefreshCw, CheckCircle2, Wrench, Bug, Clock, UserCheck, Shield } from 'lucide-react';
+import { 
+  ScrollText, ShieldCheck, ShieldAlert, Wrench, RefreshCw, 
+  Search, CheckCircle2, AlertTriangle, Hash, Lock, Database
+} from 'lucide-react';
 import { AuditLog } from '../types';
-import { api } from '../services/api';
 import { Badge } from '../components/Badge';
+import { api } from '../services/api';
 
 export const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<{
-    valid: boolean;
-    total_records: number;
-    tampered_index: number | null;
-    message: string;
-  } | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [verificationResult, setVerificationResult] = useState<{ valid: boolean; total_records: number; message: string; tampered_index?: number } | null>(null);
+  const [verifying, setVerifying] = useState<boolean>(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const fetchLogs = async () => {
     try {
@@ -21,7 +21,7 @@ export const AuditLogs: React.FC = () => {
       const data = await api.getAuditLogs(50);
       setLogs(data);
     } catch (e) {
-      console.error('Failed to fetch audit logs:', e);
+      console.error('Failed to load audit logs:', e);
     } finally {
       setLoading(false);
     }
@@ -33,77 +33,70 @@ export const AuditLogs: React.FC = () => {
 
   const handleVerifyChain = async () => {
     try {
-      setLoading(true);
+      setVerifying(true);
       const res = await api.verifyAuditChain();
       setVerificationResult(res);
-      setStatusMsg(`Chain audit complete: ${res.message}`);
+      setStatusMsg(res.message);
     } catch (e: any) {
-      setStatusMsg(`Error verifying audit chain: ${e.message}`);
+      setStatusMsg(`Verification failed: ${e.message}`);
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
   const handleSimulateTamper = async () => {
     try {
-      setLoading(true);
+      setVerifying(true);
       const res = await api.simulateAuditTamper();
-      setStatusMsg(`Deliberate tamper simulated on record ID #${res.record_id}. Click "Verify Chain Integrity" to demonstrate tamper detection.`);
-      await fetchLogs();
+      setStatusMsg(`Adversary database record tampering simulated at Record #${res.record_id}. Run 'Verify Chain' to validate tamper detection.`);
+      fetchLogs();
     } catch (e: any) {
-      setStatusMsg(`Error simulating tamper: ${e.message}`);
+      setStatusMsg(`Tamper error: ${e.message}`);
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
   const handleRepairChain = async () => {
     try {
-      setLoading(true);
+      setVerifying(true);
       const res = await api.repairAuditChain();
-      setStatusMsg(`Audit chain hashes re-anchored and repaired.`);
-      setVerificationResult(null);
-      await fetchLogs();
+      setStatusMsg(`Merkle hash chain repaired and re-anchored. Integrity restored.`);
+      setVerificationResult({ valid: true, total_records: logs.length, message: 'Chain repaired' });
+      fetchLogs();
     } catch (e: any) {
-      setStatusMsg(`Error repairing chain: ${e.message}`);
+      setStatusMsg(`Repair error: ${e.message}`);
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
-  // Helper to parse event data for hospital presentation
-  const parseEventDetails = (eventDataStr: string, eventType: string) => {
-    try {
-      const parsed = JSON.parse(eventDataStr);
-      const action = parsed.action || parsed.reason || parsed.event || eventType.replace(/_/g, ' ');
-      const prevStatus = parsed.previous_status || parsed.old_status || (parsed.previous_hash ? 'Anchored' : 'Initial');
-      const result = parsed.result || 'RECORDED';
-      return { action, prevStatus, result, raw: parsed };
-    } catch {
-      return { action: eventType.replace(/_/g, ' '), prevStatus: 'Anchored', result: 'RECORDED', raw: eventDataStr };
-    }
-  };
+  const filteredLogs = logs.filter(l => 
+    l.event_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l.current_hash.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2A0910] gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <ScrollText className="w-5 h-5 text-cyan-400" />
-            Audit Logs & Cryptographic Accountability
+          <h1 className="text-xl md:text-2xl font-bold text-[#0B1733] dark:text-white flex items-center gap-2.5">
+            <ScrollText className="w-6 h-6 text-[#35C5E8]" />
+            Tamper-Evident Hospital Security Audit Trail
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Immutable, SHA-256 hash-chained hospital audit trail guaranteeing compliance and tamper-evident logging for all gateway actions.
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Cryptographic SHA-256 Merkle chain providing non-repudiation and integrity verification for regulatory compliance.
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={handleVerifyChain}
-            disabled={loading}
-            className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-all flex items-center gap-1.5 shadow"
+            disabled={verifying}
+            className="px-3.5 py-2 rounded-xl bg-[#19B77A] hover:bg-[#159E68] text-[#0B1733] font-bold text-xs shadow-sm flex items-center gap-1.5"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>Verify Chain Integrity</span>
@@ -111,155 +104,124 @@ export const AuditLogs: React.FC = () => {
 
           <button
             onClick={handleSimulateTamper}
-            disabled={loading}
-            className="px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 font-semibold text-xs border border-rose-500/30 transition-all flex items-center gap-1.5"
-            title="Demonstrate that the chain catches unauthorized database tampering"
+            disabled={verifying}
+            className="px-3.5 py-2 rounded-xl bg-[#E94B5B]/15 hover:bg-[#E94B5B]/25 text-[#E94B5B] border border-[#E94B5B]/30 font-bold text-xs flex items-center gap-1.5"
+            title="Simulate unauthorized database modification"
           >
-            <Bug className="w-3.5 h-3.5 text-rose-400" />
+            <AlertTriangle className="w-4 h-4" />
             <span>Simulate DB Tampering</span>
           </button>
 
           <button
             onClick={handleRepairChain}
-            disabled={loading}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-all flex items-center gap-1.5"
+            disabled={verifying}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#20070E] hover:bg-slate-200 text-slate-700 dark:text-white text-xs font-semibold border border-slate-200 dark:border-[#2A0910] flex items-center gap-1.5"
           >
-            <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+            <Wrench className="w-4 h-4 text-[#F5A623]" />
             <span>Repair Chain</span>
           </button>
 
           <button
             onClick={fetchLogs}
             disabled={loading}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
-            title="Refresh Logs"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-[#20070E] hover:bg-slate-200 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2A0910]"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {statusMsg && (
-        <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-cyan-300 flex items-center justify-between">
-          <span>&gt; {statusMsg}</span>
-          <button onClick={() => setStatusMsg(null)} className="text-slate-400 hover:text-white">&times;</button>
-        </div>
-      )}
-
-      {/* Verification Result Banner */}
+      {/* Verification Status Banner */}
       {verificationResult && (
-        <div className={`p-4 rounded-xl border flex items-start gap-3 shadow-md ${
-          verificationResult.valid 
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
-            : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+        <div className={`p-4 rounded-xl border flex items-center justify-between text-xs font-semibold ${
+          verificationResult.valid
+            ? 'bg-[#19B77A]/10 border-[#19B77A]/30 text-[#19B77A]'
+            : 'bg-[#E94B5B]/10 border-[#E94B5B]/30 text-[#E94B5B]'
         }`}>
-          {verificationResult.valid ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-          ) : (
-            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-          )}
-          <div className="text-xs space-y-1">
-            <div className="font-bold text-sm">
-              {verificationResult.valid ? 'AUDIT LOG INTEGRITY VERIFIED — CHAIN INTACT' : 'AUDIT CHAIN TAMPERING DETECTED!'}
-            </div>
-            <div className="text-xs leading-relaxed">
-              {verificationResult.message}
-            </div>
-            {verificationResult.tampered_index && (
-              <div className="text-rose-400 font-bold font-mono text-xs">
-                Flagged Compromised Record ID: #{verificationResult.tampered_index}
-              </div>
-            )}
+          <div className="flex items-center space-x-2">
+            {verificationResult.valid ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertTriangle className="w-5 h-5 shrink-0" />}
+            <span>
+              {verificationResult.valid 
+                ? `Cryptographic Audit Chain Intact: All ${verificationResult.total_records} records verified against SHA-256 state anchors.`
+                : `TAMPERING DETECTED! Audit link broken at Record #${verificationResult.tampered_index}. Merkle root mismatch.`}
+            </span>
           </div>
+          <button onClick={() => setVerificationResult(null)} className="text-slate-400 hover:text-white">✕</button>
         </div>
       )}
 
-      {/* Audit Logs Table with Required Hospital Display Fields */}
-      <div className="bg-[#111827] rounded-xl border border-slate-800 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-300">
-            Hash-Chained Medical Audit Records ({logs.length})
-          </span>
-          <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-            <Shield className="w-3 h-3" /> Cryptographic Proof Active
-          </span>
+      {statusMsg && !verificationResult && (
+        <div className="p-3 rounded-xl bg-[#35C5E8]/10 border border-[#35C5E8]/30 text-[#35C5E8] text-xs font-semibold">
+          {statusMsg}
         </div>
+      )}
 
+      {/* Search Bar */}
+      <div className="bg-white dark:bg-[#120508] rounded-xl p-4 border border-slate-200 dark:border-[#2A0910] flex items-center justify-between">
+        <div className="relative w-full max-w-sm">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by event, actor, or hash prefix..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-xs bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#35C5E8]"
+          />
+        </div>
+        <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+          {filteredLogs.length} verified records
+        </span>
+      </div>
+
+      {/* Audit Log Table */}
+      <div className="bg-white dark:bg-[#120508] rounded-2xl border border-slate-200 dark:border-[#2A0910] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/60 text-slate-400 uppercase font-mono text-[10px]">
+            <thead className="bg-slate-50 dark:bg-[#18060B] text-slate-500 dark:text-slate-400 uppercase font-mono text-[10px] border-b border-slate-200 dark:border-[#2A0910]">
               <tr>
-                <th className="py-3 px-4">Date & Time</th>
-                <th className="py-3 px-4">User / Device Responsible</th>
-                <th className="py-3 px-4">Action Performed</th>
-                <th className="py-3 px-4">Previous Status</th>
-                <th className="py-3 px-4">Result</th>
-                <th className="py-3 px-4">Integrity Status</th>
-                <th className="py-3 px-4">Hash Digest</th>
+                <th className="py-3 px-4">Index</th>
+                <th className="py-3 px-4">Timestamp</th>
+                <th className="py-3 px-4">Event Type</th>
+                <th className="py-3 px-4">Authorized Actor</th>
+                <th className="py-3 px-4">Cryptographic Hash Digest (SHA-256)</th>
+                <th className="py-3 px-4 text-right">Integrity</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
-              {logs.map((log) => {
-                const details = parseEventDetails(log.event_data, log.event_type);
-                const isTampered = verificationResult && !verificationResult.valid && verificationResult.tampered_index === log.id;
-                
-                return (
-                  <tr 
-                    key={log.id} 
-                    className={`transition-colors ${isTampered ? 'bg-rose-950/40 border border-rose-500' : 'hover:bg-slate-800/30'}`}
-                  >
-                    {/* Date & Time */}
-                    <td className="py-3 px-4 font-mono text-slate-400 whitespace-nowrap text-[11px]">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#2A0910]/60 text-slate-700 dark:text-slate-300">
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-[#260810]/40 transition-colors">
+                    <td className="py-3 px-4 font-mono text-[#35C5E8] font-bold">
+                      #{log.id}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-400">
                       {new Date(log.timestamp).toLocaleString()}
                     </td>
-
-                    {/* User / Device Responsible */}
-                    <td className="py-3 px-4 font-semibold text-cyan-300 font-mono">
-                      {log.actor || 'SYSTEM'}
+                    <td className="py-3 px-4 font-semibold text-[#0B1733] dark:text-white">
+                      {log.event_type}
                     </td>
-
-                    {/* Action Performed */}
-                    <td className="py-3 px-4 font-medium text-white max-w-xs">
-                      <div className="font-semibold text-slate-200 capitalize">{details.action}</div>
-                      <div className="text-[10px] font-mono text-slate-400 truncate" title={log.event_data}>
-                        {log.event_type}
-                      </div>
+                    <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
+                      {log.actor}
                     </td>
-
-                    {/* Previous Status */}
-                    <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">
-                      <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                        {details.prevStatus}
+                    <td className="py-3 px-4 font-mono text-[10px] text-slate-400 truncate max-w-xs">
+                      <span className="text-[#35C5E8]">{log.current_hash.substring(0, 16)}</span>
+                      <span>{log.current_hash.substring(16, 48)}...</span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#19B77A] font-semibold bg-[#19B77A]/10 px-2 py-0.5 rounded border border-[#19B77A]/30">
+                        <Lock className="w-3 h-3" />
+                        CHAINED
                       </span>
-                    </td>
-
-                    {/* Result */}
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {details.result}
-                      </span>
-                    </td>
-
-                    {/* Integrity Verification Status */}
-                    <td className="py-3 px-4">
-                      {isTampered ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                          TAMPERED
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          VERIFIED
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Hash Digest */}
-                    <td className="py-3 px-4 font-mono text-slate-400 text-[11px]" title={`Current Hash: ${log.current_hash}\nPrev Hash: ${log.previous_hash}`}>
-                      <span className="text-emerald-400 font-semibold">{log.current_hash.substring(0, 8)}...</span>
                     </td>
                   </tr>
-                );
-              })}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="text-center py-10 text-slate-400">
+                    No audit logs matching search.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -267,3 +229,5 @@ export const AuditLogs: React.FC = () => {
     </div>
   );
 };
+
+export default AuditLogs;

@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Filter, RefreshCw, ShieldAlert, Search, Eye, X, Info } from 'lucide-react';
+import { 
+  AlertTriangle, ShieldAlert, Search, Filter, RefreshCw, 
+  X, Info, CheckCircle2, ShieldCheck, Terminal
+} from 'lucide-react';
 import { SecurityEvent } from '../types';
-import { api } from '../services/api';
 import { Badge } from '../components/Badge';
+import { api } from '../services/api';
 import { formatEventToHospitalLanguage } from '../utils/securityLanguage';
 
 export const SecurityEvents: React.FC = () => {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [severityFilter, setSeverityFilter] = useState('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [severityFilter, setSeverityFilter] = useState<string>('ALL');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedEvent, setSelectedEvent] = useState<SecurityEvent | null>(null);
 
   const fetchEvents = async () => {
@@ -18,7 +21,7 @@ export const SecurityEvents: React.FC = () => {
       const data = await api.getSecurityEvents(100);
       setEvents(data);
     } catch (e) {
-      console.error('Failed to fetch security events:', e);
+      console.error('Failed to load security events:', e);
     } finally {
       setLoading(false);
     }
@@ -28,225 +31,208 @@ export const SecurityEvents: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const filtered = events.filter(evt => {
-    if (severityFilter !== 'ALL' && evt.severity !== severityFilter) return false;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      const friendly = formatEventToHospitalLanguage(evt.event_type, evt.attack_type, evt.result, evt.reason);
-      const matchId = evt.event_id.toLowerCase().includes(term);
-      const matchType = evt.event_type.toLowerCase().includes(term);
-      const matchFriendly = friendly.friendlyTitle.toLowerCase().includes(term);
-      const matchDevice = (evt.device_id || '').toLowerCase().includes(term);
-      const matchReason = evt.reason.toLowerCase().includes(term);
-      return matchId || matchType || matchFriendly || matchDevice || matchReason;
-    }
-    return true;
+  const filteredEvents = events.filter((e) => {
+    const matchesSeverity = severityFilter === 'ALL' || e.severity === severityFilter;
+    const matchesSearch = 
+      (e.device_id && e.device_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (e.event_type && e.event_type.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (e.attack_type && e.attack_type.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (e.reason && e.reason.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesSeverity && matchesSearch;
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2A0910] gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-cyan-400" />
-            Threat & Security Activity
+          <h1 className="text-xl md:text-2xl font-bold text-[#0B1733] dark:text-white flex items-center gap-2.5">
+            <AlertTriangle className="w-6 h-6 text-[#F5A623]" />
+            Threat Intelligence & Security Activity Feed
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Review detected cyber threats, security activity, and automated gateway protections across connected medical equipment.
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Real-time intrusion detection audit stream recording all mitigated attacks and policy enforcements.
           </p>
         </div>
 
         <button
           onClick={fetchEvents}
           disabled={loading}
-          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all self-start sm:self-auto"
-          title="Refresh Events"
+          className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#20070E] hover:bg-slate-200 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2A0910] self-start sm:self-auto"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#35C5E8]' : ''}`} />
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#111827] rounded-xl p-4 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
-        <div className="flex items-center space-x-2 flex-1 max-w-md bg-slate-900 px-3 py-2 rounded-lg border border-slate-700">
-          <Search className="w-4 h-4 text-slate-400 shrink-0" />
+      <div className="bg-white dark:bg-[#120508] rounded-xl p-4 border border-slate-200 dark:border-[#2A0910] flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="relative w-full md:w-80">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by Device, Event, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent text-white outline-none w-full text-xs"
+            placeholder="Search events, devices, threat codes..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-xs bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#35C5E8]"
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-slate-400 font-medium">Severity:</span>
+        <div className="flex items-center space-x-2 w-full md:w-auto">
+          <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <span className="text-xs text-slate-500">Severity:</span>
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-cyan-500 font-mono text-xs"
+            className="px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white focus:outline-none focus:border-[#35C5E8]"
           >
-            <option value="ALL">ALL SEVERITIES</option>
-            <option value="CRITICAL">CRITICAL</option>
-            <option value="HIGH">HIGH</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="LOW">LOW</option>
-            <option value="INFO">INFO</option>
+            <option value="ALL">All Severities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+            <option value="INFO">Info</option>
           </select>
         </div>
       </div>
 
-      {/* Events Table with Understandable Hospital Descriptions */}
-      <div className="bg-[#111827] rounded-xl border border-slate-800 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-300">
-            Security Activity Log ({filtered.length} matching events)
-          </span>
-          <span className="text-xs font-mono text-slate-400">Total Recorded: {events.length}</span>
-        </div>
-
+      {/* Events Table */}
+      <div className="bg-white dark:bg-[#120508] rounded-2xl border border-slate-200 dark:border-[#2A0910] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/60 text-slate-400 uppercase font-mono text-[10px]">
+            <thead className="bg-slate-50 dark:bg-[#18060B] text-slate-500 dark:text-slate-400 uppercase font-mono text-[10px] border-b border-slate-200 dark:border-[#2A0910]">
               <tr>
                 <th className="py-3 px-4">Time</th>
-                <th className="py-3 px-4">Medical Device</th>
-                <th className="py-3 px-4">Security Event</th>
-                <th className="py-3 px-4">Threat Scenario</th>
+                <th className="py-3 px-4">Target Device</th>
+                <th className="py-3 px-4">Threat Description</th>
                 <th className="py-3 px-4">Severity</th>
-                <th className="py-3 px-4">Action Taken</th>
-                <th className="py-3 px-4">Outcome</th>
+                <th className="py-3 px-4">Enforced Action</th>
+                <th className="py-3 px-4">Gateway Outcome</th>
                 <th className="py-3 px-4 text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
-              {filtered.map((evt) => {
-                const friendly = formatEventToHospitalLanguage(evt.event_type, evt.attack_type, evt.result, evt.reason);
-                return (
-                  <tr 
-                    key={evt.id} 
-                    onClick={() => setSelectedEvent(evt)}
-                    className="hover:bg-slate-800/30 transition-colors cursor-pointer group"
-                  >
-                    <td className="py-3 px-4 font-mono text-slate-400 whitespace-nowrap text-[11px]">
-                      {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </td>
-                    <td className="py-3 px-4 font-mono font-semibold text-cyan-300">
-                      {evt.device_id || 'GATEWAY'}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-white max-w-sm">
-                      <div className="font-semibold text-slate-200">{friendly.friendlyTitle}</div>
-                      <div className="text-[11px] text-slate-400 truncate max-w-xs">{friendly.plainReason}</div>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-rose-300 text-[11px]">
-                      {evt.attack_type !== 'NONE' ? evt.attack_type : 'ROUTINE'}
-                    </td>
-                    <td className="py-3 px-4"><Badge type={evt.severity} /></td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        friendly.actionColor === 'rose' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
-                        friendly.actionColor === 'emerald' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                        'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      }`}>
-                        {friendly.actionTaken}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4"><Badge type={evt.result} /></td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedEvent(evt); }}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition-colors border border-slate-700 group-hover:border-cyan-500/30"
-                      >
-                        <Eye className="w-3 h-3 inline mr-1" />
-                        Inspect
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+            <tbody className="divide-y divide-slate-100 dark:divide-[#2A0910]/60 text-slate-700 dark:text-slate-300">
+              {filteredEvents.length > 0 ? (
+                filteredEvents.map((evt) => {
+                  const friendly = formatEventToHospitalLanguage(evt.event_type, evt.attack_type, evt.result, evt.reason);
+                  return (
+                    <tr 
+                      key={evt.id} 
+                      onClick={() => setSelectedEvent(evt)}
+                      className="hover:bg-slate-50 dark:hover:bg-[#260810]/40 transition-colors cursor-pointer"
+                    >
+                      <td className="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">
+                        {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-[#35C5E8]">
+                        {evt.device_id || 'GATEWAY'}
+                      </td>
+                      <td className="py-3 px-4 max-w-xs">
+                        <div className="font-semibold text-[#0B1733] dark:text-white">{friendly.friendlyTitle}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{friendly.plainReason}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge type={evt.severity} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold font-mono ${
+                          friendly.actionColor === 'rose' ? 'bg-[#E94B5B]/15 text-[#E94B5B] border border-[#E94B5B]/30' :
+                          friendly.actionColor === 'emerald' ? 'bg-[#19B77A]/15 text-[#19B77A] border border-[#19B77A]/30' :
+                          'bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30'
+                        }`}>
+                          {friendly.actionTaken}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge type={evt.result} />
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedEvent(evt); }}
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#20070E] hover:bg-slate-200 text-slate-700 dark:text-white text-[11px] border border-slate-200 dark:border-[#2A0910]"
+                        >
+                          Inspect
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center py-10 text-slate-400">
+                    No security events matching filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Inspect Modal with Original Event Codes Available Under Event Details */}
+      {/* Forensic Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-white dark:bg-[#120508] border border-slate-200 dark:border-[#2A0910] rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2A0910] pb-3">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Info className="w-5 h-5 text-cyan-400" />
-                  Security Activity Inspection
+                <h3 className="text-base font-bold text-[#0B1733] dark:text-white flex items-center gap-2">
+                  <Terminal className="w-5 h-5 text-[#35C5E8]" />
+                  Threat Incident Forensics
                 </h3>
-                <div className="text-xs font-mono text-cyan-400 mt-0.5">
-                  Event Reference: {selectedEvent.event_id}
+                <div className="text-xs font-mono text-[#35C5E8] mt-0.5">
+                  EVENT: {selectedEvent.event_id}
                 </div>
               </div>
-              <button 
-                onClick={() => setSelectedEvent(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
-              >
+              <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
-                <div className="text-slate-400 font-medium">Hospital-Friendly Explanation:</div>
-                <div className="text-slate-100 font-semibold text-sm">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] space-y-1">
+                <span className="text-slate-400 font-medium">Hospital Context:</span>
+                <div className="font-bold text-sm text-[#0B1733] dark:text-white">
                   {formatEventToHospitalLanguage(selectedEvent.event_type, selectedEvent.attack_type, selectedEvent.result, selectedEvent.reason).friendlyTitle}
                 </div>
-                <div className="text-slate-300 text-xs leading-relaxed">
+                <div className="text-slate-600 dark:text-slate-300">
                   {formatEventToHospitalLanguage(selectedEvent.event_type, selectedEvent.attack_type, selectedEvent.result, selectedEvent.reason).plainReason}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-slate-400 text-[10px]">Medical Device</div>
-                  <div className="text-white font-bold mt-0.5">{selectedEvent.device_id || 'GATEWAY'}</div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910]">
+                  <span className="text-slate-400 text-[10px]">Medical Device</span>
+                  <div className="font-bold text-[#0B1733] dark:text-white mt-0.5">{selectedEvent.device_id || 'GATEWAY'}</div>
                 </div>
-
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-slate-400 text-[10px]">Date & Time</div>
-                  <div className="text-white mt-0.5">{new Date(selectedEvent.timestamp).toLocaleString()}</div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910]">
+                  <span className="text-slate-400 text-[10px]">Timestamp</span>
+                  <div className="text-slate-700 dark:text-white mt-0.5">{new Date(selectedEvent.timestamp).toLocaleString()}</div>
                 </div>
-
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-slate-400 text-[10px]">Severity</div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910]">
+                  <span className="text-slate-400 text-[10px]">Threat Severity</span>
                   <div className="mt-1"><Badge type={selectedEvent.severity} /></div>
                 </div>
-
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="text-slate-400 text-[10px]">Gateway Result</div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910]">
+                  <span className="text-slate-400 text-[10px]">Gateway Outcome</span>
                   <div className="mt-1"><Badge type={selectedEvent.result} /></div>
                 </div>
               </div>
 
-              {/* Technical Details: Keep original event codes available */}
-              <div className="p-3.5 rounded-xl bg-black/50 border border-slate-800 font-mono text-[11px] space-y-1.5">
-                <div className="text-slate-400 font-sans font-semibold text-xs mb-1">
-                  Technical Security Reference:
-                </div>
-                <div><span className="text-slate-500">Original Event Code:</span> <span className="text-cyan-300 font-bold">{selectedEvent.event_type}</span></div>
-                <div><span className="text-slate-500">Threat Classification:</span> <span className="text-rose-300">{selectedEvent.attack_type}</span></div>
-                <div><span className="text-slate-500">Detection Module:</span> <span className="text-emerald-400">{selectedEvent.detection_module}</span></div>
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] font-mono text-[11px] space-y-1">
+                <div><span className="text-slate-400">Event Code:</span> <span className="text-[#35C5E8]">{selectedEvent.event_type}</span></div>
+                <div><span className="text-slate-400">Detection Engine:</span> <span className="text-[#19B77A]">{selectedEvent.detection_module}</span></div>
                 <div className="pt-1">
-                  <span className="text-slate-500">Raw Technical Reason:</span>
-                  <div className="text-slate-300 mt-1 bg-slate-900 p-2 rounded border border-slate-800 font-sans text-xs leading-relaxed">
+                  <span className="text-slate-400">Cryptographic Defense Log:</span>
+                  <div className="mt-1 p-2 rounded bg-white dark:bg-[#0B1733] border border-slate-200 dark:border-[#2A0910] text-slate-700 dark:text-slate-300">
                     {selectedEvent.reason}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-slate-800 pt-3 flex justify-end">
+            <div className="border-t border-slate-200 dark:border-[#2A0910] pt-3 flex justify-end">
               <button
                 onClick={() => setSelectedEvent(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#20070E] text-slate-700 dark:text-white text-xs font-semibold"
               >
                 Close
               </button>
@@ -257,3 +243,5 @@ export const SecurityEvents: React.FC = () => {
     </div>
   );
 };
+
+export default SecurityEvents;

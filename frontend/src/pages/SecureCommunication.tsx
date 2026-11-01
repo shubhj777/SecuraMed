@@ -1,193 +1,166 @@
 import React, { useState } from 'react';
 import { 
-  Lock, ShieldCheck, CheckCircle2, ChevronDown, ChevronUp, 
-  Layers, KeyRound, Cpu, ShieldAlert, Sparkles, Activity
+  Lock, ShieldCheck, Key, Shield, CheckCircle2, 
+  ArrowRight, Cpu, Zap, Eye, ChevronDown, ChevronUp, Server, Radio
 } from 'lucide-react';
 
 export const SecureCommunication: React.FC = () => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(true);
 
-  // Five Understandable Stages for Hospital IT & Management
   const stages = [
     {
-      stageNum: 1,
-      title: 'Device Identity Verification',
-      description: 'Confirming that the connected medical device is registered and trusted.',
-      status: 'Verified',
-      statusType: 'success',
-      techName: 'ML-DSA-65 (NIST FIPS 204)',
-      techDetail: 'Device signs a fresh random challenge with its registered post-quantum private key to mathematically prove identity without revealing secrets.'
+      num: '01',
+      title: 'Mutual Device Authentication',
+      standard: 'NIST FIPS 204 (ML-DSA-65)',
+      desc: 'The medical device presents its cryptographic identity certificate. The IoMT Gateway verifies the digital signature using post-quantum lattice verification to eliminate device spoofing.',
+      badge: 'VERIFIED',
+      color: '#35C5E8',
+      icon: Key
     },
     {
-      stageNum: 2,
-      title: 'Secure Connection Establishment',
-      description: 'Establishing a protected connection between the medical device and gateway.',
-      status: 'Established',
-      statusType: 'success',
-      techName: 'ML-KEM-768 (NIST FIPS 203)',
-      techDetail: 'Lattice-based key encapsulation establishes a 256-bit quantum-resistant shared secret between the device and the gateway.'
+      num: '02',
+      title: 'Post-Quantum Key Encapsulation',
+      standard: 'NIST FIPS 203 (ML-KEM-768)',
+      desc: 'A quantum-resistant key exchange establishes a shared secret over the hospital wireless link, rendering communications immune to "Harvest Now, Decrypt Later" quantum eavesdropping.',
+      badge: 'ESTABLISHED',
+      color: '#19B77A',
+      icon: Lock
     },
     {
-      stageNum: 3,
-      title: 'Communication Encryption',
-      description: 'Protecting medical device information while it travels across the network.',
-      status: 'Protected',
-      statusType: 'success',
-      techName: 'AES-256-GCM + HKDF-SHA256',
-      techDetail: 'Independent session keys are derived using HKDF and numerical vital signs are encrypted with authenticated AES-256-GCM.'
+      num: '03',
+      title: 'HKDF Session Key Derivation',
+      standard: 'RFC 5869 (HKDF-SHA256)',
+      desc: 'Cryptographic extract-and-expand key derivation generates isolated 256-bit symmetric session keys and distinct initialization vectors for each communication cycle.',
+      badge: 'ACTIVE',
+      color: '#818CF8',
+      icon: Zap
     },
     {
-      stageNum: 4,
-      title: 'Message Integrity Verification',
-      description: 'Checking that messages have not been altered or modified during communication.',
-      status: 'Verified',
-      statusType: 'success',
-      techName: 'Associated Authenticated Data (AAD)',
-      techDetail: 'The 128-bit GHASH authentication tag binds telemetry ciphertext directly to device ID, session ID, and sequence metadata to prevent tampering.'
+      num: '04',
+      title: 'Authenticated Payload Encryption',
+      standard: 'NIST SP 800-38D (AES-256-GCM)',
+      desc: 'Patient vitals and clinical commands are encrypted using AES-GCM with a 128-bit authentication tag, guaranteeing confidentiality and immediate detection of message tampering.',
+      badge: 'PROTECTED',
+      color: '#F5A623',
+      icon: ShieldCheck
     },
     {
-      stageNum: 5,
-      title: 'Duplicate Message Protection',
-      description: 'Preventing previously captured messages from being submitted again.',
-      status: 'Protected',
-      statusType: 'success',
-      techName: 'Sequence Monotonicity & Sliding Window',
-      techDetail: 'Strictly monotonic sequence numbers and session sliding window reject captured or repeated transmissions.'
+      num: '05',
+      title: 'Anti-Replay Window Verification',
+      standard: 'Monotonic Sequence Counters',
+      desc: 'Strict sequential nonce validation detects and drops duplicate or out-of-order packets injected by wireless eavesdroppers within the hospital network.',
+      badge: 'ENFORCED',
+      color: '#19B77A',
+      icon: Shield
     }
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Lock className="w-5 h-5 text-cyan-400" />
-          Secure Device Communication
-        </h1>
-        <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-          Monitor how medical devices establish trusted connections and securely exchange information with hospital systems.
-        </p>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2A0910] gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-[#0B1733] dark:text-white flex items-center gap-2.5">
+            <Lock className="w-6 h-6 text-[#35C5E8]" />
+            5-Stage Quantum-Resistant Medical Encryption Pipeline
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            End-to-end cryptographic encapsulation securing patient physiological streams against interception.
+          </p>
+        </div>
+
+        <span className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-[#19B77A]/15 text-[#19B77A] border border-[#19B77A]/30 flex items-center gap-1.5 self-start sm:self-auto">
+          <span className="w-2 h-2 rounded-full bg-[#19B77A] animate-pulse" />
+          <span>FIPS 203 / 204 Active</span>
+        </span>
       </div>
 
-      {/* 5 Understandable Communication Stages */}
-      <div className="space-y-3">
-        {stages.map((stg) => (
-          <div 
-            key={stg.stageNum} 
-            className="bg-[#111827] rounded-xl p-5 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-cyan-500/30 transition-all shadow-sm"
-          >
-            <div className="flex items-start space-x-4">
-              <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-mono font-bold text-base flex items-center justify-center shrink-0">
-                0{stg.stageNum}
-              </div>
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-bold text-white">Stage {stg.stageNum}: {stg.title}</h3>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-cyan-300 border border-slate-700">
-                    {stg.techName}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans max-w-2xl">
-                  {stg.description}
-                </p>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  {stg.techDetail}
-                </p>
-              </div>
-            </div>
-
-            <div className="shrink-0 flex items-center md:flex-col items-end justify-center">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {stg.status}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Advanced Security Details Section (Expandable for Technical Personnel) */}
-      <div className="bg-[#111827] rounded-xl border border-slate-800 overflow-hidden shadow-md">
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-800/40 transition-colors"
-        >
-          <div className="flex items-center space-x-2">
-            <Layers className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-bold text-white">Advanced Security Details</h2>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">
-              Technical Architecture & Wire Format
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-cyan-400 font-medium">
-            <span>{showAdvanced ? 'Hide Technical Details' : 'View Technical Details'}</span>
-            {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
-        </button>
-
-        {showAdvanced && (
-          <div className="p-5 border-t border-slate-800 space-y-5 bg-slate-950/40 text-xs">
-            {/* Cryptographic Technologies List */}
-            <div>
-              <div className="text-xs font-semibold text-slate-200 mb-2">Underlying Cryptographic Standards:</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">ML-KEM-768</div>
-                  <div className="text-[11px] text-slate-400 mt-1">NIST FIPS 203 — Module Lattice Key Encapsulation (Security Category 3)</div>
+      {/* Visual Pipeline Stages */}
+      <div className="space-y-4">
+        {stages.map((stg, idx) => {
+          const Icon = stg.icon;
+          return (
+            <div
+              key={stg.num}
+              className="bg-white dark:bg-[#120508] rounded-2xl border border-slate-200 dark:border-[#2A0910] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-[#35C5E8]/40 transition-all"
+            >
+              <div className="flex items-start space-x-4">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                  style={{ backgroundColor: `${stg.color}15`, color: stg.color, border: `1px solid ${stg.color}40` }}
+                >
+                  <Icon className="w-6 h-6" />
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">ML-DSA-65</div>
-                  <div className="text-[11px] text-slate-400 mt-1">NIST FIPS 204 — Module Lattice Digital Signatures for proof-of-possession</div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">AES-256-GCM</div>
-                  <div className="text-[11px] text-slate-400 mt-1">NIST SP 800-38D — Galois/Counter Mode authenticated symmetric bulk cipher</div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">HKDF-SHA256</div>
-                  <div className="text-[11px] text-slate-400 mt-1">RFC 5869 — Extract-and-expand key derivation with transcript binding</div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">Authenticated Associated Data (AAD)</div>
-                  <div className="text-[11px] text-slate-400 mt-1">RFC 5116 — Authenticates device ID, session ID & sequence number in GHASH</div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
-                  <div className="font-mono text-cyan-300 font-bold">Replay Protection</div>
-                  <div className="text-[11px] text-slate-400 mt-1">Sequence-number-based tracking with in-memory window and DB constraints</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Wire Payload & AAD Inspector */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-slate-300 font-mono">Standardized Wire Payload Format:</div>
-                <pre className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-cyan-300 overflow-x-auto">
-{`{
-  "device_id": "MED-001",
-  "session_id": "SES-D9C1A52B8E04",
-  "sequence_number": 101,
-  "nonce": "7f8b92c10a44de889012bb44",
-  "ciphertext": "3e9f4a10bc...",
-  "authentication_tag": "99bcae7104f210a56611328900bbca12"
-}`}
-                </pre>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-slate-300 font-mono">Associated Authenticated Data (AAD):</div>
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-300 space-y-2">
-                  <div className="text-amber-400 font-bold">AAD String: "MED-001|SES-D9C1A52B8E04|101"</div>
-                  <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                    The medical device ID, session ID, and strictly increasing sequence number are bound directly into the AES-GCM GHASH tag.
-                    If an attacker tampers with the sequence number, replaces the device ID, or injects a duplicate message, the authentication tag fails and the gateway drops the packet.
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold font-mono text-slate-400">STAGE {stg.num}</span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="text-xs font-mono font-bold" style={{ color: stg.color }}>
+                      {stg.standard}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-[#0B1733] dark:text-white">{stg.title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    {stg.desc}
                   </p>
                 </div>
+              </div>
+
+              <div className="flex items-center space-x-3 shrink-0 self-end md:self-center font-mono">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#19B77A]/15 text-[#19B77A] border border-[#19B77A]/30">
+                  {stg.badge}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Advanced Cryptographic Specifications Box */}
+      <div className="bg-white dark:bg-[#120508] rounded-2xl border border-slate-200 dark:border-[#2A0910] p-6 shadow-sm">
+        <div 
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex items-center justify-between cursor-pointer select-none"
+        >
+          <div className="flex items-center space-x-2">
+            <Cpu className="w-5 h-5 text-[#35C5E8]" />
+            <h3 className="font-bold text-sm text-[#0B1733] dark:text-white">
+              NIST Cryptographic Architecture Specifications
+            </h3>
+          </div>
+          {showAdvanced ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        </div>
+
+        {showAdvanced && (
+          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-[#2A0910] grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] space-y-1.5">
+              <span className="text-[#35C5E8] font-bold">ML-KEM-768 Parameters</span>
+              <div className="text-slate-600 dark:text-slate-400 text-[11px] space-y-1">
+                <div>Public Key Size: 1,184 bytes</div>
+                <div>Ciphertext Size: 1,088 bytes</div>
+                <div>Shared Secret: 32 bytes (256 bits)</div>
+                <div>Security Level: NIST Category 3</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] space-y-1.5">
+              <span className="text-[#19B77A] font-bold">ML-DSA-65 Parameters</span>
+              <div className="text-slate-600 dark:text-slate-400 text-[11px] space-y-1">
+                <div>Public Key Size: 1,952 bytes</div>
+                <div>Signature Size: 3,309 bytes</div>
+                <div>Lattice Dimension: 6x5 matrix</div>
+                <div>Security Level: NIST Category 3</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] space-y-1.5">
+              <span className="text-[#F5A623] font-bold">AES-256-GCM Framing</span>
+              <div className="text-slate-600 dark:text-slate-400 text-[11px] space-y-1">
+                <div>Symmetric Key: 256 bits</div>
+                <div>IV / Nonce: 96 bits unique</div>
+                <div>Authentication Tag: 128 bits</div>
+                <div>Anti-Replay Window: 64 packets</div>
               </div>
             </div>
           </div>
@@ -196,3 +169,5 @@ export const SecureCommunication: React.FC = () => {
     </div>
   );
 };
+
+export default SecureCommunication;

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, User, Shield, AlertCircle, CheckCircle2, ArrowRight, Sun, Moon, Stethoscope } from 'lucide-react';
-import { SecureMedLogo } from '../components/SecureMedLogo';
+import { 
+  Eye, EyeOff, Lock, User, Shield, AlertCircle, CheckCircle2, 
+  ArrowRight, Sun, Moon, Radio, ShieldCheck, Key, Zap
+} from 'lucide-react';
+import { MedNexusLogo } from '../components/MedNexusLogo';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -37,7 +40,6 @@ export const Login: React.FC = () => {
       setIsLoading(true);
       setErrorMessage(null);
       const tokenData = await api.login(username.trim(), password);
-      // Fetch user profile from /auth/me
       const profile = await api.getMe(tokenData.access_token);
       login(tokenData.access_token, profile);
     } catch (err: any) {
@@ -100,47 +102,47 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#F5F7FA] dark:bg-[#0B0F19] text-[#172033] dark:text-[#F3F4F6] transition-colors duration-200">
-      {/* Top utility bar */}
-      <div className="w-full px-6 py-4 flex items-center justify-between border-b border-[#E2E8F0] dark:border-slate-800 bg-white dark:bg-[#0F172A]/70 backdrop-blur-md">
-        <SecureMedLogo size="md" />
+    <div className="min-h-screen flex flex-col justify-between bg-[#F3F6FB] dark:bg-[#18060B] text-[#0B1733] dark:text-[#F3F6FB] transition-colors duration-200">
+      {/* Top Header */}
+      <div className="w-full px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-[#2A0910] bg-white dark:bg-[#0B1733] shadow-sm">
+        <MedNexusLogo size="md" showSubtitle={false} />
 
         <div className="flex items-center space-x-3">
-          <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Gateway Online &amp; Post-Quantum Active</span>
+          <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#19B77A]/15 text-[#19B77A] border border-[#19B77A]/30">
+            <span className="w-2 h-2 rounded-full bg-[#19B77A] animate-pulse" />
+            <span>Hospital Security Gateway: ONLINE</span>
           </div>
 
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700"
+            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#20070E] dark:hover:bg-[#2E0B16] text-slate-600 dark:text-slate-300 transition-all border border-slate-200 dark:border-[#2A0910]"
             title={isDark ? "Switch to Hospital Light Mode" : "Switch to Cybersecurity Dark Mode"}
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+            {isDark ? <Sun className="w-4 h-4 text-[#F5A623]" /> : <Moon className="w-4 h-4 text-slate-700" />}
           </button>
         </div>
       </div>
 
-      {/* Main Login Card Container */}
+      {/* Main Login Card */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/40 border border-[#E2E8F0] dark:border-slate-800 p-8">
+        <div className="w-full max-w-md bg-white dark:bg-[#120508] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#2A0910] p-8 space-y-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 dark:bg-[#E63946]/10 text-[#E63946] mb-3">
-              <Stethoscope className="w-6 h-6" />
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#35C5E8]/10 text-[#35C5E8] mb-1">
+              <ShieldCheck className="w-7 h-7" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#172033] dark:text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-[#0B1733] dark:text-white">
               Hospital Security Portal
             </h1>
-            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-2 max-w-sm mx-auto">
-              Secure access to your hospital’s connected medical device security infrastructure.
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              Authenticate to manage connected medical device cybersecurity and monitor live IoMT threat telemetry.
             </p>
           </div>
 
           {/* Error Notice */}
           {errorMessage && (
-            <div className="mb-6 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-xs flex items-center space-x-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-[#E63946]" />
+            <div className="p-3 rounded-xl bg-[#E94B5B]/10 border border-[#E94B5B]/30 text-[#E94B5B] text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -148,8 +150,8 @@ export const Login: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#172033] dark:text-slate-300 mb-1.5">
-                Hospital Email / Username
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Hospital Operator / Admin ID
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -160,7 +162,7 @@ export const Login: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin@hospital.org or username"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-white dark:bg-slate-900/80 border border-[#E2E8F0] dark:border-slate-700 text-[#172033] dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E63946]/30 focus:border-[#E63946] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#35C5E8]"
                   required
                 />
               </div>
@@ -168,13 +170,13 @@ export const Login: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-[#172033] dark:text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(true)}
-                  className="text-xs font-medium text-[#E63946] hover:underline"
+                  className="text-xs font-medium text-[#35C5E8] hover:underline"
                 >
                   Forgot Password?
                 </button>
@@ -188,13 +190,13 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-white dark:bg-slate-900/80 border border-[#E2E8F0] dark:border-slate-700 text-[#172033] dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E63946]/30 focus:border-[#E63946] transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#35C5E8]"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -203,18 +205,18 @@ export const Login: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center space-x-2 text-xs text-[#64748B] dark:text-slate-400 cursor-pointer">
+              <label className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#E63946] focus:ring-[#E63946] border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                  className="w-4 h-4 rounded text-[#35C5E8] border-slate-300"
                 />
-                <span>Remember Me</span>
+                <span>Remember Credentials</span>
               </label>
 
               <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                <Shield className="w-3 h-3 text-emerald-500" />
+                <Shield className="w-3 h-3 text-[#19B77A]" />
                 <span>Argon2id Encrypted</span>
               </span>
             </div>
@@ -222,59 +224,59 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-[#E63946] hover:bg-[#D62839] active:bg-[#C51F30] text-white font-semibold text-sm shadow-md shadow-red-500/20 hover:shadow-lg hover:shadow-red-500/30 transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3 px-4 rounded-xl bg-[#35C5E8] hover:bg-[#2CB3D5] text-[#0B1733] font-extrabold text-sm shadow-md shadow-[#35C5E8]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-70 mt-2"
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-[#0B1733]/30 border-t-[#0B1733] rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Sign In to Hospital Portal</span>
+                  <span>Sign In to Security SOC</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Hospital Roles Quick-Select Helper for Demonstrators & Evaluators */}
-          <div className="mt-8 pt-6 border-t border-[#E2E8F0] dark:border-slate-800">
-            <div className="text-[11px] font-semibold tracking-wider uppercase text-slate-400 mb-2 text-center">
-              Hospital Personnel Profiles (1-Click Demo)
+          {/* 1-Click Demo Profiles */}
+          <div className="pt-6 border-t border-slate-100 dark:border-[#2A0910]">
+            <div className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-2.5 text-center font-mono">
+              Evaluator Quick-Select Roles (1-Click Demo)
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => handleQuickRole('admin', 'SecureMedAdmin2026!')}
-                className="p-2 rounded-lg border border-[#E2E8F0] dark:border-slate-800 bg-[#F5F7FA] dark:bg-slate-900/60 hover:border-[#E63946] dark:hover:border-[#E63946] text-left transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-[#2A0910] bg-slate-50 dark:bg-[#18060B] hover:border-[#35C5E8] text-left transition-all"
               >
-                <div className="font-semibold text-xs text-[#172033] dark:text-slate-200">Hospital Admin</div>
-                <div className="text-[10px] text-slate-500">Dr. Sarah Jenkins</div>
+                <div className="font-semibold text-xs text-[#0B1733] dark:text-slate-200">Clinical CISO / Admin</div>
+                <div className="text-[10px] text-slate-500">Dr. Rajesh Sharma</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickRole('it_admin', 'SecureMedIT2026!')}
-                className="p-2 rounded-lg border border-[#E2E8F0] dark:border-slate-800 bg-[#F5F7FA] dark:bg-slate-900/60 hover:border-[#E63946] dark:hover:border-[#E63946] text-left transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-[#2A0910] bg-slate-50 dark:bg-[#18060B] hover:border-[#35C5E8] text-left transition-all"
               >
-                <div className="font-semibold text-xs text-[#172033] dark:text-slate-200">IT Administrator</div>
-                <div className="text-[10px] text-slate-500">Marcus Vance</div>
+                <div className="font-semibold text-xs text-[#0B1733] dark:text-slate-200">Biomedical Engineer</div>
+                <div className="text-[10px] text-slate-500">Eng. Vikram Malhotra</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickRole('analyst', 'SecureMedAnalyst2026!')}
-                className="p-2 rounded-lg border border-[#E2E8F0] dark:border-slate-800 bg-[#F5F7FA] dark:bg-slate-900/60 hover:border-[#E63946] dark:hover:border-[#E63946] text-left transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-[#2A0910] bg-slate-50 dark:bg-[#18060B] hover:border-[#35C5E8] text-left transition-all"
               >
-                <div className="font-semibold text-xs text-[#172033] dark:text-slate-200">Cyber Analyst</div>
-                <div className="text-[10px] text-slate-500">Alex Chen</div>
+                <div className="font-semibold text-xs text-[#0B1733] dark:text-slate-200">Cyber Analyst</div>
+                <div className="text-[10px] text-slate-500">Priya Patel</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickRole('operator', 'SecureMedOps2026!')}
-                className="p-2 rounded-lg border border-[#E2E8F0] dark:border-slate-800 bg-[#F5F7FA] dark:bg-slate-900/60 hover:border-[#E63946] dark:hover:border-[#E63946] text-left transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-[#2A0910] bg-slate-50 dark:bg-[#18060B] hover:border-[#35C5E8] text-left transition-all"
               >
-                <div className="font-semibold text-xs text-[#172033] dark:text-slate-200">Security Operator</div>
-                <div className="text-[10px] text-slate-500">David Miller</div>
+                <div className="font-semibold text-xs text-[#0B1733] dark:text-slate-200">Security Operations</div>
+                <div className="text-[10px] text-slate-500">Marcus Vance</div>
               </button>
             </div>
           </div>
@@ -282,119 +284,88 @@ export const Login: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="py-4 text-center text-xs text-[#64748B] dark:text-slate-500 border-t border-[#E2E8F0] dark:border-slate-800 bg-white dark:bg-[#0F172A]/50">
-        <p>SecureMed Gateway • Hospital Connected Medical Device (IoMT) Cybersecurity Platform</p>
-        <p className="text-[10px] text-slate-400 mt-1">NIST FIPS 203 (ML-KEM-768) • NIST FIPS 204 (ML-DSA-65) • AES-256-GCM</p>
+      <div className="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-[#2A0910] bg-white dark:bg-[#0B1733]">
+        <p className="font-medium">SecuraMed • Medical Device & IoMT Cybersecurity Platform</p>
+        <p className="text-[10px] text-slate-400 mt-1 font-mono">
+          NIST FIPS 203 (ML-KEM-768) • NIST FIPS 204 (ML-DSA-65) • AES-256-GCM Authenticated Cipher
+        </p>
       </div>
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl p-6 border border-[#E2E8F0] dark:border-slate-800 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0] dark:border-slate-800">
-              <h3 className="font-bold text-base text-[#172033] dark:text-white flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#E63946]" />
+          <div className="w-full max-w-md bg-white dark:bg-[#120508] rounded-2xl p-6 border border-slate-200 dark:border-[#2A0910] shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#2A0910]">
+              <h3 className="font-bold text-sm text-[#0B1733] dark:text-white flex items-center gap-2">
+                <Lock className="w-4 h-4 text-[#35C5E8]" />
                 <span>Password Recovery</span>
               </h3>
-              <button
-                onClick={() => { setShowForgotModal(false); setForgotSuccess(null); setResetToken(null); }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg leading-none"
-              >
-                &times;
-              </button>
+              <button onClick={() => setShowForgotModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
             {!resetToken ? (
-              <form onSubmit={handleForgotPassword} className="mt-4 space-y-4">
-                <p className="text-xs text-[#64748B] dark:text-slate-400">
-                  Enter your hospital email address or username. A time-limited single-use security token will be generated to verify your identity.
+              <form onSubmit={handleForgotPassword} className="mt-4 space-y-4 text-xs">
+                <p className="text-slate-500 dark:text-slate-400">
+                  Enter your hospital identifier or email. A time-limited single-use security token will be dispatched.
                 </p>
-
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-[#172033] dark:text-slate-300">
-                    Hospital Identifier
-                  </label>
+                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Hospital ID</label>
                   <input
                     type="text"
                     value={forgotIdentifier}
                     onChange={(e) => setForgotIdentifier(e.target.value)}
                     placeholder="admin@hospital.org"
-                    className="w-full px-3.5 py-2 rounded-xl text-sm bg-white dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-700 text-[#172033] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E63946]"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white focus:outline-none focus:border-[#35C5E8]"
                     required
                   />
                 </div>
-
                 {forgotSuccess && (
-                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400 text-xs">
+                  <div className="p-3 rounded-xl bg-[#19B77A]/10 border border-[#19B77A]/30 text-[#19B77A]">
                     {forgotSuccess}
                   </div>
                 )}
-
                 <div className="flex justify-end space-x-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotModal(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={forgotLoading}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#E63946] text-white hover:bg-[#D62839] disabled:opacity-50"
-                  >
-                    {forgotLoading ? 'Verifying...' : 'Request Reset Token'}
+                  <button type="button" onClick={() => setShowForgotModal(false)} className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#20070E] text-slate-600 dark:text-slate-300">Cancel</button>
+                  <button type="submit" disabled={forgotLoading} className="px-3 py-1.5 rounded-lg bg-[#35C5E8] text-[#0B1733] font-bold">
+                    {forgotLoading ? 'Verifying...' : 'Request Token'}
                   </button>
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleResetPassword} className="mt-4 space-y-4">
-                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300">
-                  <span className="font-semibold">Reset Token Generated:</span> Single-use 15-minute token verified.
+              <form onSubmit={handleResetPassword} className="mt-4 space-y-4 text-xs">
+                <div className="p-2.5 rounded-xl bg-[#19B77A]/10 border border-[#19B77A]/30 text-[#19B77A]">
+                  Token verified. Set new password:
                 </div>
-
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-[#172033] dark:text-slate-300">
-                    New Password
-                  </label>
+                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">New Password</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="At least 8 characters"
-                    className="w-full px-3.5 py-2 rounded-xl text-sm bg-white dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-700 text-[#172033] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E63946]"
+                    placeholder="Min 8 characters"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white focus:outline-none focus:border-[#35C5E8]"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-[#172033] dark:text-slate-300">
-                    Confirm New Password
-                  </label>
+                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Confirm Password</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Re-enter password"
-                    className="w-full px-3.5 py-2 rounded-xl text-sm bg-white dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-700 text-[#172033] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E63946]"
+                    placeholder="Confirm password"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#18060B] border border-slate-200 dark:border-[#2A0910] text-slate-800 dark:text-white focus:outline-none focus:border-[#35C5E8]"
                     required
                   />
                 </div>
-
                 {resetSuccess && (
-                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-xs flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Password updated securely with Argon2id!</span>
+                  <div className="p-3 rounded-xl bg-[#19B77A]/10 text-[#19B77A]">
+                    Password updated securely with Argon2id!
                   </div>
                 )}
-
                 <div className="flex justify-end space-x-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={forgotLoading}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#E63946] text-white hover:bg-[#D62839] disabled:opacity-50"
-                  >
-                    {forgotLoading ? 'Updating...' : 'Set New Password'}
+                  <button type="submit" disabled={forgotLoading} className="px-3 py-1.5 rounded-lg bg-[#35C5E8] text-[#0B1733] font-bold">
+                    {forgotLoading ? 'Updating...' : 'Set Password'}
                   </button>
                 </div>
               </form>
@@ -405,3 +376,5 @@ export const Login: React.FC = () => {
     </div>
   );
 };
+
+export default Login;
